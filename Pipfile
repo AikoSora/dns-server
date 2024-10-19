@@ -6,6 +6,9 @@ name = "pypi"
 [packages]
 dnslib = "*"
 django = "*"
+gunicorn = "*"
+python-dotenv = "*"
+psycopg = "*"
 
 [dev-packages]
 

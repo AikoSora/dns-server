@@ -3,3 +3,5 @@ env
 *.sqlite3
 *.lock
 .DS_Store
+.env
+docker-compose.override.yml

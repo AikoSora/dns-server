@@ -1,0 +1,19 @@
+services:
+
+  postgres:
+    restart: always
+    ports:
+      - 5433:5432
+
+  server:
+    restart: always
+    ports:
+      - 53:53/udp
+
+  admin:
+    restart: always
+  
+  web:
+    restart: always
+    ports:
+      - 1081:80

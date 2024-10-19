@@ -10,6 +10,8 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.0/ref/settings/
 """
 
+import os, re
+
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -23,9 +25,16 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-h4c1zm#^t8edgm477(uaimn(hq*17@q^#cff5!yp(^h9@o-76h'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = bool(int(os.getenv('DEBUG', '0')))
 
-ALLOWED_HOSTS = []
+
+# Frontend URL address
+APPLICATION_URL = os.getenv('APPLICATION_URL', '*')
+
+if DEBUG is True:
+    ALLOWED_HOSTS = ['*']
+else:
+    ALLOWED_HOSTS = [re.sub(r'https?://', '', APPLICATION_URL).split(':')[0]]
 
 
 # Application definition
@@ -76,8 +85,12 @@ WSGI_APPLICATION = 'src.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR.parent / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': os.getenv('POSTGRES_DB'),
+        'USER': os.getenv('POSTGRES_USER'),
+        'PASSWORD': os.getenv('POSTGRES_PASSWORD'),
+        'HOST': os.getenv('DB_HOST'),
+        'PORT': os.getenv('DB_PORT'),
     }
 }
 
@@ -99,6 +112,53 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+# CORS, CSRF
+
+CSRF_COOKIE_DOMAIN = '.'.join(APPLICATION_URL.split('.')[-2:])
+
+if DEBUG:
+    CORS_ALLOW_ALL_ORIGINS = True
+    CSRF_TRUSTED_ORIGINS = [APPLICATION_URL]
+else:
+    CORS_ALLOWED_ORIGINS = [APPLICATION_URL]
+    CSRF_TRUSTED_ORIGINS = []
+
+    for origin in ALLOWED_HOSTS:
+        CSRF_TRUSTED_ORIGINS.append(f'http://{origin}')
+        CSRF_TRUSTED_ORIGINS.append(f'https://{origin}')
+
+# Logging
+# https://docs.djangoproject.com/en/4.2/topics/logging/
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            'format': '{levelname} {asctime} {module} {process:d} {thread:d} {message}',
+            'style': '{',
+        },
+    },
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+            'formatter': 'verbose',
+        },
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['console', ],
+            'level': 'INFO',
+            'propagate': False,
+        },
+        'root': {
+            'handlers': ['console', ],
+            'level': 'INFO',
+            'propagate': False,
+        },
+    },
+}
+
 
 # Internationalization
 # https://docs.djangoproject.com/en/5.0/topics/i18n/
@@ -116,6 +176,7 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.0/howto/static-files/
 
 STATIC_URL = 'static/'
+STATIC_ROOT = BASE_DIR / 'static'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field

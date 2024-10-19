@@ -5,6 +5,8 @@ from socketserver import UDPServer
 
 from dns.server.handler.dns_handler import DNSHandler
 
+import logging
+
 
 class Command(BaseCommand):
     def handle(self, *args, **options):
@@ -14,11 +16,11 @@ class Command(BaseCommand):
             host = option
         else:
             host = gethostbyname(
-                hostname=gethostname(),
+                gethostname(),
             )
 
         server = UDPServer((host, 53), DNSHandler)
-        print(f'Start server on: {host}:53')
+        logging.info(f'Start server on: {host}:53')
         server.serve_forever()
 
     def add_arguments(self, parser):

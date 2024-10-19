@@ -6,6 +6,8 @@ from dns.crud import get_domain_records, get_domain
 from dns.server.types.records import get_record
 from dns.server.resolve import dns_lookup
 
+import logging
+
 
 class DNSHandler(BaseRequestHandler):
 
@@ -26,6 +28,8 @@ class DNSHandler(BaseRequestHandler):
             )
 
             qname = str(request.q.qname)
+
+            logging.info(f'Handle {qname}')
 
             if domain := get_domain(name=qname[:len(qname) - 1]):
 
@@ -63,7 +67,7 @@ class DNSHandler(BaseRequestHandler):
             socket_object.sendto(reply.pack(), self.client_address)
 
         except Exception as ex:
-            print(ex)
+            logging.error(f'Error handling {ex}')
             return ex
 
 
